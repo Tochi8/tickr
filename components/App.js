@@ -6,15 +6,16 @@ import {
   useBalance,
   useDisconnect,
   useReadContract,
-  useSendTransaction,
   useSwitchChain,
-  useWaitForTransactionReceipt,
-  useWriteContract,
 } from "wagmi";
 import { base } from "wagmi/chains";
-import { formatUnits, parseUnits } from "viem";
-import { getDataSuffix } from "../lib/builderCode";
-import { aerodromeUrl, basescanTx } from "../lib/swap";
+import { formatUnits } from "viem";
+import {
+  aerodromeUrl,
+  coinbaseDappUrl,
+  isMobileBrowser,
+  metamaskDappUrl,
+} from "../lib/swap";
 import { ERC20_ABI, STOCKS, USDC } from "../lib/tokens";
 import ConnectModal from "./ConnectModal";
 import StockBalance from "./StockBalance";
@@ -35,9 +36,7 @@ export default function App() {
   const [stockSymbol, setStockSymbol] = useState("NVDAc");
   const [amount, setAmount] = useState("5");
   const [eligible, setEligible] = useState(false);
-  const [quote, setQuote] = useState(null);
-  const [quoteError, setQuoteError] = useState("");
-  const [quoting, setQuoting] = useState(false);
+  const [hint, setHint] = useState("");
 
   const stock = useMemo(
     () => STOCKS.find((s) => s.symbol === stockSymbol) || STOCKS[0],
@@ -54,79 +53,25 @@ export default function App() {
     query: { enabled: Boolean(address) },
   });
 
-  const { writeContractAsync, data: approveHash, isPending: isApproving } =
-    useWriteContract();
-  const { sendTransactionAsync, data: swapHash, isPending: isSwapping } =
-    useSendTransaction();
-  const pendingHash = swapHash || approveHash;
-  const receipt = useWaitForTransactionReceipt({ hash: pendingHash });
   const wrongNetwork = isConnected && chainId !== base.id;
+  const swapUrl = aerodromeUrl(stock.address);
+  const mobile = isMobileBrowser();
 
-  async function handleQuote() {
-    setQuoteError("");
-    setQuote(null);
+  function startBuy(kind) {
+    setHint("");
     if (!eligible) {
-      setQuoteError("Confirm you are an eligible non-US user first.");
+      setHint("Confirm you are an eligible non-US user first.");
       return;
     }
-    let sellAmount;
-    try {
-      sellAmount = parseUnits(amount || "0", USDC.decimals).toString();
-    } catch {
-      setQuoteError("Enter a valid USDC amount.");
+    if (kind === "metamask") {
+      window.location.href = metamaskDappUrl(swapUrl);
       return;
     }
-    if (sellAmount === "0") {
-      setQuoteError("Amount must be greater than 0.");
+    if (kind === "coinbase") {
+      window.location.href = coinbaseDappUrl(swapUrl);
       return;
     }
-    setQuoting(true);
-    try {
-      const res = await fetch(
-        `/api/quote?buyToken=${stock.address}&sellAmount=${sellAmount}&taker=${address}`
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        setQuoteError(
-          data.error === "missing_key"
-            ? "In-app quote needs a 0x key. Use Open Aerodrome for a live swap."
-            : data.detail || data.error || "Quote failed"
-        );
-        return;
-      }
-      setQuote(data);
-    } catch (error) {
-      setQuoteError(error.message || "Quote failed");
-    } finally {
-      setQuoting(false);
-    }
-  }
-
-  async function handleSwap() {
-    if (!quote?.transaction) {
-      setQuoteError("Get a quote first, or swap on Aerodrome.");
-      return;
-    }
-    const tx = quote.transaction;
-    const spender = quote.allowanceTarget || tx.to;
-    const sellAmount = quote.sellAmount || parseUnits(amount, USDC.decimals).toString();
-    if (spender) {
-      await writeContractAsync({
-        address: USDC.address,
-        abi: ERC20_ABI,
-        functionName: "approve",
-        args: [spender, BigInt(sellAmount)],
-        chainId: base.id,
-        dataSuffix: getDataSuffix(),
-      });
-    }
-    await sendTransactionAsync({
-      to: tx.to,
-      data: tx.data,
-      value: tx.value ? BigInt(tx.value) : undefined,
-      chainId: base.id,
-      dataSuffix: getDataSuffix(),
-    });
+    window.open(swapUrl, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -203,8 +148,8 @@ export default function App() {
               <p>NVDAc, AAPLc, METAc, and GOOGLc from Coinbase Tokenized Stocks on Base.</p>
             </article>
             <article className="feature">
-              <h3>USDC in, stock out</h3>
-              <p>Quote in-app when a 0x key is set, or finish the swap on Aerodrome.</p>
+              <h3>Routed swap</h3>
+              <p>Tickr picks the Base pair. Aerodrome processes the buy in your wallet.</p>
             </article>
           </section>
 
@@ -216,7 +161,7 @@ export default function App() {
             <ol className="steps">
               <li><strong>Connect</strong> a wallet on Base.</li>
               <li><strong>Pick</strong> a stock and a USDC amount.</li>
-              <li><strong>Swap</strong> in Tickr or on Aerodrome.</li>
+              <li><strong>Buy</strong> on Aerodrome, opened from Tickr with the pair set.</li>
             </ol>
           </section>
 
@@ -265,7 +210,7 @@ export default function App() {
               <h2>Buy with USDC</h2>
               <div className="picks">
                 {STOCKS.map((item) => (
-                  <button key={item.symbol} className={item.symbol === stock.symbol ? "chip on chip-row" : "chip chip-row"} onClick={() => { setStockSymbol(item.symbol); setQuote(null); }}>
+                  <button key={item.symbol} className={item.symbol === stock.symbol ? "chip on chip-row" : "chip chip-row"} onClick={() => setStockSymbol(item.symbol)}>
                     <StockMark symbol={item.symbol} />
                     <span className="chip-copy">
                       {item.symbol}
@@ -286,20 +231,26 @@ export default function App() {
                 <input type="checkbox" checked={eligible} onChange={(e) => setEligible(e.target.checked)} />
                 I am not a US person and I am in an eligible jurisdiction.
               </label>
+              <p className="ok">
+                Tickr sets USDC → {stock.symbol} on Base. Aerodrome runs the swap in your wallet.
+              </p>
               <div className="actions">
-                <button className="btn" onClick={handleQuote} disabled={quoting}>{quoting ? "Quoting…" : "Get quote"}</button>
-                <button className="btn primary" onClick={handleSwap} disabled={!quote || isApproving || isSwapping}>
-                  {isApproving || isSwapping ? "Confirm in wallet…" : `Buy ${stock.symbol}`}
-                </button>
-                <a className="btn ghost" href={aerodromeUrl(stock.address)} target="_blank" rel="noreferrer">Open Aerodrome</a>
+                {mobile ? (
+                  <>
+                    <button className="btn primary" onClick={() => startBuy("metamask")}>
+                      Buy {stock.symbol} in MetaMask
+                    </button>
+                    <button className="btn" onClick={() => startBuy("coinbase")}>
+                      Buy {stock.symbol} in Coinbase Wallet
+                    </button>
+                  </>
+                ) : (
+                  <button className="btn primary" onClick={() => startBuy("web")}>
+                    Buy {stock.symbol} on Aerodrome
+                  </button>
+                )}
               </div>
-              {quoteError && <p className="err">{quoteError}</p>}
-              {quote?.buyAmount && (
-                <p className="ok">Quote: you send {formatToken(BigInt(quote.sellAmount || "0"), 6, 2)} USDC for about {formatToken(BigInt(quote.buyAmount), stock.decimals, 6)} {stock.symbol}</p>
-              )}
-              {pendingHash && (
-                <p className="ok">Tx submitted: <a href={basescanTx(pendingHash)} target="_blank" rel="noreferrer">{pendingHash.slice(0, 10)}…</a>{receipt.isLoading ? " · waiting" : receipt.isSuccess ? " · confirmed" : ""}</p>
-              )}
+              {hint && <p className="err">{hint}</p>}
             </div>
           </section>
         </>
