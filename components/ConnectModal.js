@@ -10,7 +10,6 @@ const LINKS = {
   metamaskApp: `https://metamask.app.link/dapp/${HOST}`,
   metamaskInstall: "https://metamask.io/download/",
   coinbaseApp: `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(SITE)}`,
-  coinbaseInstall: "https://www.coinbase.com/wallet/downloads",
 };
 
 export default function ConnectModal({ onClose }) {
@@ -36,7 +35,7 @@ export default function ConnectModal({ onClose }) {
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
-        <p className="modal-kicker">You'll need an Ethereum wallet to continue.</p>
+        <p className="modal-kicker">You will need an Ethereum wallet to continue.</p>
         <button className="wallet-row" onClick={connectBrowser} disabled={isPending}>
           <span className="wallet-icon">W</span>
           Browser Wallet
