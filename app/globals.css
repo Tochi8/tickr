@@ -24,10 +24,14 @@ a { color: #7dd3fc; text-decoration: none; }
   margin-bottom: 24px;
 }
 .brand {
-  display: flex; align-items: center; gap: 10px; color: var(--text);
-  font-weight: 750; font-size: 22px; letter-spacing: -0.03em; min-width: 0;
+  display: flex; align-items: center; gap: 12px; color: var(--text);
+  font-weight: 750; font-size: 24px; letter-spacing: -0.03em; min-width: 0;
 }
-.logo { width: 40px; height: 40px; border-radius: 11px; flex: 0 0 auto; }
+.logo-wrap {
+  width: 48px; height: 48px; border-radius: 14px; overflow: hidden;
+  background: #061018; flex: 0 0 auto; display: grid; place-items: center;
+}
+.logo { width: 48px; height: 48px; display: block; }
 .nav-links { display: flex; gap: 18px; color: var(--muted); font-size: 14px; }
 .nav-links a { color: var(--muted); }
 .nav-cta { width: auto !important; padding: 8px 14px !important; font-size: 13px !important; flex: 0 0 auto; white-space: nowrap; }
@@ -97,7 +101,7 @@ h2 { font-size: 28px; margin: 8px 0 16px; }
 .foot { margin-top: 36px; color: var(--muted); font-size: 12px; line-height: 1.6; display: grid; gap: 6px; }
 .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: grid; place-items: center; padding: 20px; z-index: 40; }
 .modal { width: min(420px, 100%); background: #f4f4f5; color: #111; border-radius: 20px; padding: 22px; }
-.modal-kicker { color: #555; font-size: 14px; margin-bottom: 14px; text-align: center; }
+.modal-kicker { color: #555; font-size: 14px; margin-bottom: 14px; }
 .wallet-row {
   display: flex; align-items: center; gap: 12px; width: 100%; background: #fff; border: 0;
   border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; font: inherit; cursor: pointer; color: #111;
@@ -109,8 +113,8 @@ h2 { font-size: 28px; margin: 8px 0 16px; }
 .modal-note { color: #666; font-size: 12px; line-height: 1.4; margin: 8px 0 12px; }
 @media (max-width: 800px) {
   h1 { font-size: 32px; }
-  .brand { font-size: 20px; }
-  .logo { width: 36px; height: 36px; }
+  .brand { font-size: 22px; }
+  .logo-wrap, .logo { width: 44px; height: 44px; }
   .nav-links { display: none; }
   .features, .how, .grid { grid-template-columns: 1fr; }
   .hero-stage { min-height: 360px; }
