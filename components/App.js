@@ -134,7 +134,7 @@ export default function App() {
       <nav className="nav">
         <a className="brand" href="#top">
           <span className="logo-wrap">
-            <img className="logo" src="/tickr-logo.svg" alt="Tickr" width="48" height="48" />
+            <img className="logo" src="/tickr-logo.JPG" alt="Tickr" width="48" height="48" />
           </span>
           Tickr
         </a>
