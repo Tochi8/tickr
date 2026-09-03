@@ -64,7 +64,7 @@ export default function App() {
   async function handleQuote() {
     setQuoteError("");
     setQuote(null);
-    if (!address || !eligible) {
+    if (!eligible) {
       setQuoteError("Confirm you are an eligible non-US user first.");
       return;
     }
@@ -130,15 +130,17 @@ export default function App() {
 
   return (
     <main className="shell">
-      <header className="top">
-        <div>
-          <p className="eyebrow">Tickr · Base · Coinbase Tokenized Stocks</p>
-          <h1>Tickr</h1>
-          <p className="lede">
-            Buy fractional NVIDIA, Apple, Meta, or Alphabet with USDC from a
-            self-custody wallet. Eligible non-US users only.
-          </p>
-        </div>
+      <nav className="nav">
+        <a className="brand" href="#top">
+          <span className="mark">T</span>
+          Tickr
+        </a>
+        {!isConnected && (
+          <div className="nav-links">
+            <a href="#features">Features</a>
+            <a href="#how">How it works</a>
+          </div>
+        )}
         {isConnected ? (
           <div className="wallet">
             <p className="addr">{address.slice(0, 6)}…{address.slice(-4)}</p>
@@ -149,26 +151,79 @@ export default function App() {
             Connect wallet
           </button>
         )}
-      </header>
-
-      <div className="banner">
-        Coinbase Tokenized Stocks are offered to eligible persons outside the
-        United States. Tickr does not onboard US users and is not a broker.
-        Verify contract addresses on{" "}
-        <a href="https://www.base.org/stocks" target="_blank" rel="noreferrer">base.org/stocks</a>.
-      </div>
+      </nav>
 
       {!isConnected && (
-        <section className="card gate">
-          <h2>Connect a wallet to continue</h2>
-          <p className="lede">
-            You do not need a wallet already open in this browser. Choose MetaMask,
-            Coinbase Wallet, or WalletConnect — same pattern as Aerodrome.
-          </p>
-          <button className="btn primary" onClick={() => setOpenConnect(true)}>
-            Connect wallet
-          </button>
-        </section>
+        <>
+          <section className="hero" id="top">
+            <p className="eyebrow">Tickr · Base · Coinbase Tokenized Stocks</p>
+            <h1>Buy the names you already know, onchain.</h1>
+            <p className="lede hero-lede">
+              Eligible non-US users can buy fractional NVIDIA, Apple, Meta, and
+              Alphabet with USDC from a self-custody wallet.
+            </p>
+            <div className="hero-actions">
+              <button className="btn primary" onClick={() => setOpenConnect(true)}>
+                Get started
+              </button>
+              <a className="btn ghost" href="#how">See how it works</a>
+            </div>
+            <div className="hero-stage">
+              <article className="float-card c1">
+                <p className="float-kicker">Balances</p>
+                <p>USDC <strong>48.50</strong></p>
+                <p>NVDAc <strong>0.028</strong></p>
+              </article>
+              <article className="float-card c2">
+                <p className="float-kicker">Buy with USDC</p>
+                <div className="mini-picks">
+                  <span className="chip on">NVDAc</span>
+                  <span className="chip">AAPLc</span>
+                  <span className="chip">METAc</span>
+                </div>
+                <button className="btn primary mini" type="button">Buy NVDAc</button>
+              </article>
+              <article className="float-card c3">
+                <p className="float-kicker">On Base</p>
+                <p>Official B20 contracts. Not a broker.</p>
+              </article>
+            </div>
+          </section>
+
+          <section className="features" id="features">
+            <article className="feature">
+              <h3>Self-custody</h3>
+              <p>Connect MetaMask or Coinbase Wallet. Tickr never holds your keys.</p>
+            </article>
+            <article className="feature">
+              <h3>Official tokens</h3>
+              <p>NVDAc, AAPLc, METAc, and GOOGLc from Coinbase Tokenized Stocks on Base.</p>
+            </article>
+            <article className="feature">
+              <h3>USDC in, stock out</h3>
+              <p>Quote in-app when a 0x key is set, or finish the swap on Aerodrome.</p>
+            </article>
+          </section>
+
+          <section className="how" id="how">
+            <div>
+              <p className="eyebrow">How it works</p>
+              <h2>Three steps to a first fill</h2>
+            </div>
+            <ol className="steps">
+              <li><strong>Connect</strong> a wallet on Base.</li>
+              <li><strong>Pick</strong> a stock and a USDC amount.</li>
+              <li><strong>Swap</strong> in Tickr or on Aerodrome.</li>
+            </ol>
+          </section>
+
+          <div className="banner">
+            Coinbase Tokenized Stocks are offered to eligible persons outside the
+            United States. Tickr does not onboard US users and is not a broker.
+            Verify contract addresses on{" "}
+            <a href="https://www.base.org/stocks" target="_blank" rel="noreferrer">base.org/stocks</a>.
+          </div>
+        </>
       )}
 
       {wrongNetwork && (
@@ -179,57 +234,72 @@ export default function App() {
       )}
 
       {isConnected && (
-        <section className="grid">
-          <div className="card">
-            <h2>Balances</h2>
-            <ul className="balances">
-              <li><span>ETH (gas)</span><strong>{ethBalance.data ? formatToken(ethBalance.data.value, 18, 5) : "—"}</strong></li>
-              <li><span>USDC</span><strong>{usdcBalance.data !== undefined ? formatToken(usdcBalance.data, USDC.decimals, 2) : "—"}</strong></li>
-              {STOCKS.map((item) => (
-                <StockBalance key={item.symbol} stock={item} address={address} />
-              ))}
-            </ul>
+        <>
+          <header className="desk-head">
+            <div>
+              <p className="eyebrow">Desk</p>
+              <h1>Buy with USDC</h1>
+            </div>
+          </header>
+          <div className="banner">
+            Coinbase Tokenized Stocks are offered to eligible persons outside the
+            United States. Tickr does not onboard US users and is not a broker.
+            Verify contract addresses on{" "}
+            <a href="https://www.base.org/stocks" target="_blank" rel="noreferrer">base.org/stocks</a>.
           </div>
-          <div className="card">
-            <h2>Buy with USDC</h2>
-            <div className="picks">
-              {STOCKS.map((item) => (
-                <button key={item.symbol} className={item.symbol === stock.symbol ? "chip on" : "chip"} onClick={() => { setStockSymbol(item.symbol); setQuote(null); }}>
-                  {item.symbol}<span>{item.name}</span>
+          <section className="grid">
+            <div className="card">
+              <h2>Balances</h2>
+              <ul className="balances">
+                <li><span>ETH (gas)</span><strong>{ethBalance.data ? formatToken(ethBalance.data.value, 18, 5) : "—"}</strong></li>
+                <li><span>USDC</span><strong>{usdcBalance.data !== undefined ? formatToken(usdcBalance.data, USDC.decimals, 2) : "—"}</strong></li>
+                {STOCKS.map((item) => (
+                  <StockBalance key={item.symbol} stock={item} address={address} />
+                ))}
+              </ul>
+            </div>
+            <div className="card">
+              <h2>Buy with USDC</h2>
+              <div className="picks">
+                {STOCKS.map((item) => (
+                  <button key={item.symbol} className={item.symbol === stock.symbol ? "chip on" : "chip"} onClick={() => { setStockSymbol(item.symbol); setQuote(null); }}>
+                    {item.symbol}<span>{item.name}</span>
+                  </button>
+                ))}
+              </div>
+              <label className="field">Amount (USDC)
+                <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="5" />
+              </label>
+              <div className="presets">
+                {["1", "5", "10"].map((v) => (
+                  <button key={v} className="chip" onClick={() => setAmount(v)}>${v}</button>
+                ))}
+              </div>
+              <label className="check">
+                <input type="checkbox" checked={eligible} onChange={(e) => setEligible(e.target.checked)} />
+                I am not a US person and I am in an eligible jurisdiction.
+              </label>
+              <div className="actions">
+                <button className="btn" onClick={handleQuote} disabled={quoting}>{quoting ? "Quoting…" : "Get quote"}</button>
+                <button className="btn primary" onClick={handleSwap} disabled={!quote || isApproving || isSwapping}>
+                  {isApproving || isSwapping ? "Confirm in wallet…" : `Buy ${stock.symbol}`}
                 </button>
-              ))}
+                <a className="btn ghost" href={aerodromeUrl(stock.address)} target="_blank" rel="noreferrer">Open Aerodrome</a>
+              </div>
+              {quoteError && <p className="err">{quoteError}</p>}
+              {quote?.buyAmount && (
+                <p className="ok">Quote: you send {formatToken(BigInt(quote.sellAmount || "0"), 6, 2)} USDC for about {formatToken(BigInt(quote.buyAmount), stock.decimals, 6)} {stock.symbol}</p>
+              )}
+              {pendingHash && (
+                <p className="ok">Tx submitted: <a href={basescanTx(pendingHash)} target="_blank" rel="noreferrer">{pendingHash.slice(0, 10)}…</a>{receipt.isLoading ? " · waiting" : receipt.isSuccess ? " · confirmed" : ""}</p>
+              )}
             </div>
-            <label className="field">Amount (USDC)
-              <input value={amount} onChange={(e) => setAmount(e.target.value)} inputMode="decimal" placeholder="5" />
-            </label>
-            <div className="presets">
-              {["1", "5", "10"].map((v) => (
-                <button key={v} className="chip" onClick={() => setAmount(v)}>${v}</button>
-              ))}
-            </div>
-            <label className="check">
-              <input type="checkbox" checked={eligible} onChange={(e) => setEligible(e.target.checked)} />
-              I am not a US person and I am in an eligible jurisdiction.
-            </label>
-            <div className="actions">
-              <button className="btn" onClick={handleQuote} disabled={quoting}>{quoting ? "Quoting…" : "Get quote"}</button>
-              <button className="btn primary" onClick={handleSwap} disabled={!quote || isApproving || isSwapping}>
-                {isApproving || isSwapping ? "Confirm in wallet…" : `Buy ${stock.symbol}`}
-              </button>
-              <a className="btn ghost" href={aerodromeUrl(stock.address)} target="_blank" rel="noreferrer">Open Aerodrome</a>
-            </div>
-            {quoteError && <p className="err">{quoteError}</p>}
-            {quote?.buyAmount && (
-              <p className="ok">Quote: you send {formatToken(BigInt(quote.sellAmount || "0"), 6, 2)} USDC for about {formatToken(BigInt(quote.buyAmount), stock.decimals, 6)} {stock.symbol}</p>
-            )}
-            {pendingHash && (
-              <p className="ok">Tx submitted: <a href={basescanTx(pendingHash)} target="_blank" rel="noreferrer">{pendingHash.slice(0, 10)}…</a>{receipt.isLoading ? " · waiting" : receipt.isSuccess ? " · confirmed" : ""}</p>
-            )}
-          </div>
-        </section>
+          </section>
+        </>
       )}
 
       <footer className="foot">
+        <p>© 2026 Tickr. All rights reserved.</p>
         <p>Official contracts only. Not investment advice. Availability, rights, and features vary by jurisdiction.</p>
       </footer>
       {openConnect && !isConnected && <ConnectModal onClose={() => setOpenConnect(false)} />}

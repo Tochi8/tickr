@@ -1,80 +1,67 @@
 "use client";
 
+import { useState } from "react";
 import { useConnect } from "wagmi";
 import { base } from "wagmi/chains";
 
-const SITE_HOST = "tickr-base.vercel.app";
-const SITE = `https://${SITE_HOST}`;
-
+const HOST = "tickr-base.vercel.app";
+const SITE = `https://${HOST}`;
 const LINKS = {
-  metamask: {
-    app: `https://metamask.app.link/dapp/${SITE_HOST}`,
-    install: "https://metamask.io/download/",
-  },
-  coinbase: {
-    app: `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(SITE)}`,
-    install: "https://www.coinbase.com/wallet/downloads",
-  },
+  metamaskApp: `https://metamask.app.link/dapp/${HOST}`,
+  metamaskInstall: "https://metamask.io/download/",
+  coinbaseApp: `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(SITE)}`,
+  coinbaseInstall: "https://www.coinbase.com/wallet/downloads",
 };
 
 export default function ConnectModal({ onClose }) {
   const { connectors, connect, isPending } = useConnect();
-  const injected = connectors.find((c) => c.id === "injected");
-  const wc = connectors.find((c) => c.id === "walletConnect");
+  const injected = connectors.find((c) => c.id === "injected") || connectors[0];
+  const [error, setError] = useState("");
   const hasEthereum = typeof window !== "undefined" && Boolean(window.ethereum);
 
-  async function connectInjected() {
-    if (!injected) return;
-    if (!hasEthereum) {
-      window.open(LINKS.metamask.install, "_blank", "noopener");
+  async function connectBrowser() {
+    setError("");
+    if (!hasEthereum || !injected) {
+      window.open(LINKS.metamaskInstall, "_blank", "noopener");
       return;
     }
-    await connect({ connector: injected, chainId: base.id });
-    onClose();
-  }
-
-  async function connectWc() {
-    if (!wc) {
-      window.open("https://metamask.io/download/", "_blank", "noopener");
-      return;
+    try {
+      await connect({ connector: injected, chainId: base.id });
+      onClose();
+    } catch (err) {
+      setError(err?.shortMessage || err?.message || "Connect failed");
     }
-    await connect({ connector: wc, chainId: base.id });
-    onClose();
   }
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <p className="modal-kicker">You'll need an Ethereum wallet to continue.</p>
-        <button className="wallet-row" onClick={connectInjected} disabled={isPending}>
-          <span className="wallet-icon">◉</span>
+        <button className="wallet-row" onClick={connectBrowser} disabled={isPending}>
+          <span className="wallet-icon">W</span>
           Browser Wallet
         </button>
-        <button className="wallet-row" onClick={connectWc} disabled={isPending}>
-          <span className="wallet-icon">WC</span>
-          WalletConnect
-        </button>
-        <a className="wallet-row" href={hasEthereum ? undefined : LINKS.coinbase.app} onClick={async (e) => {
+        <a className="wallet-row" href={hasEthereum ? undefined : LINKS.metamaskApp} onClick={(e) => {
           if (hasEthereum) {
             e.preventDefault();
-            await connectInjected();
+            connectBrowser();
           }
         }}>
-          <span className="wallet-icon">CB</span>
-          Coinbase Wallet
-        </a>
-        <a className="wallet-row" href={hasEthereum ? undefined : LINKS.metamask.app} onClick={async (e) => {
-          if (hasEthereum) {
-            e.preventDefault();
-            await connectInjected();
-          }
-        }}>
-          <span className="wallet-icon">MM</span>
+          <span className="wallet-icon">M</span>
           MetaMask
         </a>
+        <a className="wallet-row" href={LINKS.coinbaseApp}>
+          <span className="wallet-icon">C</span>
+          Coinbase Wallet
+        </a>
+        <a className="wallet-row" href={LINKS.metamaskInstall} target="_blank" rel="noreferrer">
+          <span className="wallet-icon">+</span>
+          Get a wallet
+        </a>
+        {error && <p className="err">{error}</p>}
         <p className="modal-note">
-          No wallet yet? MetaMask or Coinbase Wallet will open the install page.
-          WalletConnect shows a QR you scan with any wallet app.
+          On iPhone, open Tickr inside MetaMask or Coinbase Wallet. On desktop,
+          install an extension, then use Browser Wallet.
         </p>
         <button className="btn ghost" onClick={onClose}>Cancel</button>
       </div>
