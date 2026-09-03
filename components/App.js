@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   useAccount,
   useBalance,
@@ -14,10 +14,14 @@ import {
 } from "wagmi";
 import { base } from "wagmi/chains";
 import { formatUnits, parseUnits } from "viem";
-import { BUILDER_CODE, getDataSuffix } from "../lib/builderCode";
+import { getDataSuffix } from "../lib/builderCode";
 import { aerodromeUrl, basescanTx } from "../lib/swap";
 import { ERC20_ABI, STOCKS, USDC } from "../lib/tokens";
 import StockBalance from "./StockBalance";
+
+const SITE = "https://tickr-base.vercel.app";
+const METAMASK_DAPP = `https://metamask.app.link/dapp/${SITE.replace("https://", "")}`;
+const COINBASE_DAPP = `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(SITE)}`;
 
 function formatToken(value, decimals, digits = 4) {
   if (value === undefined || value === null) return "—";
@@ -32,12 +36,18 @@ export default function App() {
   const { disconnect } = useDisconnect();
   const { switchChain } = useSwitchChain();
 
+  const [hasProvider, setHasProvider] = useState(false);
+  const [connectError, setConnectError] = useState("");
   const [stockSymbol, setStockSymbol] = useState("NVDAc");
   const [amount, setAmount] = useState("5");
   const [eligible, setEligible] = useState(false);
   const [quote, setQuote] = useState(null);
   const [quoteError, setQuoteError] = useState("");
   const [quoting, setQuoting] = useState(false);
+
+  useEffect(() => {
+    setHasProvider(typeof window !== "undefined" && Boolean(window.ethereum));
+  }, []);
 
   const stock = useMemo(
     () => STOCKS.find((s) => s.symbol === stockSymbol) || STOCKS[0],
@@ -62,6 +72,21 @@ export default function App() {
   const pendingHash = swapHash || approveHash;
   const receipt = useWaitForTransactionReceipt({ hash: pendingHash });
   const wrongNetwork = isConnected && chainId !== base.id;
+
+  async function handleConnect(connector) {
+    setConnectError("");
+    if (!window.ethereum) {
+      setConnectError(
+        "No wallet in this browser. Open Tickr inside MetaMask or Coinbase Wallet."
+      );
+      return;
+    }
+    try {
+      await connect({ connector, chainId: base.id });
+    } catch (error) {
+      setConnectError(error?.shortMessage || error?.message || "Connect failed");
+    }
+  }
 
   async function handleQuote() {
     setQuoteError("");
@@ -90,9 +115,7 @@ export default function App() {
       const data = await res.json();
       if (!res.ok) {
         if (data.error === "missing_key") {
-          setQuoteError(
-            "No 0x API key yet. Use Aerodrome below for a live swap, or add ZEROEX_API_KEY."
-          );
+          setQuoteError("In-app quote needs a 0x key. Use Open Aerodrome for a live swap.");
         } else {
           setQuoteError(data.detail || data.error || "Quote failed");
         }
@@ -144,39 +167,17 @@ export default function App() {
             self-custody wallet. Eligible non-US users only.
           </p>
         </div>
-        <div className="wallet">
-          {!isConnected ? (
-            connectors.map((c) => (
-              <button
-                key={c.uid}
-                className="btn"
-                disabled={isConnecting}
-                onClick={() => connect({ connector: c, chainId: base.id })}
-              >
-                {isConnecting ? "Connecting…" : `Connect ${c.name}`}
-              </button>
-            ))
-          ) : (
-            <>
-              <p className="addr">
-                {address.slice(0, 6)}…{address.slice(-4)}
-              </p>
-              <button className="btn ghost" onClick={() => disconnect()}>
-                Disconnect
-              </button>
-            </>
-          )}
-        </div>
+        {isConnected && (
+          <div className="wallet">
+            <p className="addr">
+              {address.slice(0, 6)}…{address.slice(-4)}
+            </p>
+            <button className="btn ghost" onClick={() => disconnect()}>
+              Disconnect
+            </button>
+          </div>
+        )}
       </header>
-
-      {wrongNetwork && (
-        <div className="banner warn">
-          Wallet is not on Base.
-          <button className="btn small" onClick={() => switchChain({ chainId: base.id })}>
-            Switch to Base
-          </button>
-        </div>
-      )}
 
       <div className="banner">
         Coinbase Tokenized Stocks are offered to eligible persons outside the
@@ -188,123 +189,156 @@ export default function App() {
         .
       </div>
 
-      <section className="grid">
-        <div className="card">
-          <h2>Balances</h2>
-          <ul className="balances">
-            <li>
-              <span>ETH (gas)</span>
-              <strong>
-                {ethBalance.data ? formatToken(ethBalance.data.value, 18, 5) : "—"}
-              </strong>
-            </li>
-            <li>
-              <span>USDC</span>
-              <strong>
-                {usdcBalance.data !== undefined
-                  ? formatToken(usdcBalance.data, USDC.decimals, 2)
-                  : "—"}
-              </strong>
-            </li>
-            {STOCKS.map((item) => (
-              <StockBalance key={item.symbol} stock={item} address={address} />
-            ))}
-          </ul>
-        </div>
-
-        <div className="card">
-          <h2>Buy with USDC</h2>
-          <div className="picks">
-            {STOCKS.map((item) => (
-              <button
-                key={item.symbol}
-                className={item.symbol === stock.symbol ? "chip on" : "chip"}
-                onClick={() => {
-                  setStockSymbol(item.symbol);
-                  setQuote(null);
-                }}
-              >
-                {item.symbol}
-                <span>{item.name}</span>
-              </button>
-            ))}
-          </div>
-
-          <label className="field">
-            Amount (USDC)
-            <input
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              inputMode="decimal"
-              placeholder="5"
-            />
-          </label>
-          <div className="presets">
-            {["1", "5", "10"].map((v) => (
-              <button key={v} className="chip" onClick={() => setAmount(v)}>
-                ${v}
-              </button>
-            ))}
-          </div>
-
-          <label className="check">
-            <input
-              type="checkbox"
-              checked={eligible}
-              onChange={(e) => setEligible(e.target.checked)}
-            />
-            I am not a US person and I am in an eligible jurisdiction.
-          </label>
-
-          <div className="actions">
-            <button className="btn" onClick={handleQuote} disabled={!isConnected || quoting}>
-              {quoting ? "Quoting…" : "Get quote"}
-            </button>
-            <button
-              className="btn primary"
-              onClick={handleSwap}
-              disabled={!quote || isApproving || isSwapping}
-            >
-              {isApproving || isSwapping ? "Confirm in wallet…" : `Buy ${stock.symbol}`}
-            </button>
-            <a
-              className="btn ghost"
-              href={aerodromeUrl(stock.address)}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Open Aerodrome
-            </a>
-          </div>
-
-          {quoteError && <p className="err">{quoteError}</p>}
-          {quote?.buyAmount && (
-            <p className="ok">
-              Quote: you send {formatToken(BigInt(quote.sellAmount || "0"), 6, 2)} USDC
-              for about {formatToken(BigInt(quote.buyAmount), stock.decimals, 6)}{" "}
-              {stock.symbol}
-            </p>
-          )}
-          {pendingHash && (
-            <p className="ok">
-              Tx submitted:{" "}
-              <a href={basescanTx(pendingHash)} target="_blank" rel="noreferrer">
-                {pendingHash.slice(0, 10)}…
+      {!isConnected && (
+        <section className="card gate">
+          <h2>Sign in with a wallet</h2>
+          <p className="lede">
+            Balances and buying unlock after you connect on Base. Safari and Chrome
+            on iPhone do not contain a wallet — open this site inside MetaMask or
+            Coinbase Wallet.
+          </p>
+          {hasProvider ? (
+            <div className="actions">
+              {connectors.map((c) => (
+                <button
+                  key={c.uid}
+                  className="btn primary"
+                  disabled={isConnecting}
+                  onClick={() => handleConnect(c)}
+                >
+                  {isConnecting ? "Connecting…" : `Connect ${c.name}`}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="actions">
+              <a className="btn primary" href={METAMASK_DAPP}>
+                Open in MetaMask
               </a>
-              {receipt.isLoading ? " · waiting" : receipt.isSuccess ? " · confirmed" : ""}
-            </p>
+              <a className="btn" href={COINBASE_DAPP}>
+                Open in Coinbase Wallet
+              </a>
+            </div>
           )}
+          {connectError && <p className="err">{connectError}</p>}
+        </section>
+      )}
+
+      {wrongNetwork && (
+        <div className="banner warn">
+          Wallet is not on Base.
+          <button className="btn small" onClick={() => switchChain({ chainId: base.id })}>
+            Switch to Base
+          </button>
         </div>
-      </section>
+      )}
+
+      {isConnected && (
+        <section className="grid">
+          <div className="card">
+            <h2>Balances</h2>
+            <ul className="balances">
+              <li>
+                <span>ETH (gas)</span>
+                <strong>
+                  {ethBalance.data ? formatToken(ethBalance.data.value, 18, 5) : "—"}
+                </strong>
+              </li>
+              <li>
+                <span>USDC</span>
+                <strong>
+                  {usdcBalance.data !== undefined
+                    ? formatToken(usdcBalance.data, USDC.decimals, 2)
+                    : "—"}
+                </strong>
+              </li>
+              {STOCKS.map((item) => (
+                <StockBalance key={item.symbol} stock={item} address={address} />
+              ))}
+            </ul>
+          </div>
+
+          <div className="card">
+            <h2>Buy with USDC</h2>
+            <div className="picks">
+              {STOCKS.map((item) => (
+                <button
+                  key={item.symbol}
+                  className={item.symbol === stock.symbol ? "chip on" : "chip"}
+                  onClick={() => {
+                    setStockSymbol(item.symbol);
+                    setQuote(null);
+                  }}
+                >
+                  {item.symbol}
+                  <span>{item.name}</span>
+                </button>
+              ))}
+            </div>
+            <label className="field">
+              Amount (USDC)
+              <input
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                inputMode="decimal"
+                placeholder="5"
+              />
+            </label>
+            <div className="presets">
+              {["1", "5", "10"].map((v) => (
+                <button key={v} className="chip" onClick={() => setAmount(v)}>
+                  ${v}
+                </button>
+              ))}
+            </div>
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={eligible}
+                onChange={(e) => setEligible(e.target.checked)}
+              />
+              I am not a US person and I am in an eligible jurisdiction.
+            </label>
+            <div className="actions">
+              <button className="btn" onClick={handleQuote} disabled={quoting}>
+                {quoting ? "Quoting…" : "Get quote"}
+              </button>
+              <button
+                className="btn primary"
+                onClick={handleSwap}
+                disabled={!quote || isApproving || isSwapping}
+              >
+                {isApproving || isSwapping ? "Confirm in wallet…" : `Buy ${stock.symbol}`}
+              </button>
+              <a className="btn ghost" href={aerodromeUrl(stock.address)} target="_blank" rel="noreferrer">
+                Open Aerodrome
+              </a>
+            </div>
+            {quoteError && <p className="err">{quoteError}</p>}
+            {quote?.buyAmount && (
+              <p className="ok">
+                Quote: you send {formatToken(BigInt(quote.sellAmount || "0"), 6, 2)} USDC
+                for about {formatToken(BigInt(quote.buyAmount), stock.decimals, 6)}{" "}
+                {stock.symbol}
+              </p>
+            )}
+            {pendingHash && (
+              <p className="ok">
+                Tx submitted:{" "}
+                <a href={basescanTx(pendingHash)} target="_blank" rel="noreferrer">
+                  {pendingHash.slice(0, 10)}…
+                </a>
+                {receipt.isLoading ? " · waiting" : receipt.isSuccess ? " · confirmed" : ""}
+              </p>
+            )}
+          </div>
+        </section>
+      )}
 
       <footer className="foot">
         <p>
-          Builder Code: <code>{BUILDER_CODE}</code>
-        </p>
-        <p>
           Official contracts only. Not investment advice. Availability, rights, and
-          features vary by jurisdiction. Deadline for the Builder Quest: 9 Sep 2026
-          11:59pm EST.
+          features vary by jurisdiction.
         </p>
       </footer>
     </main>
