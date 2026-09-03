@@ -5,7 +5,11 @@ export const metadata = {
   title: "Tickr — Coinbase Tokenized Stocks on Base",
   description:
     "Tickr lets eligible non-US users buy Coinbase Tokenized Stocks on Base with USDC.",
-  icons: { icon: "/tickr-logo.svg" },
+  icons: {
+    icon: [{ url: "/tickr-logo.svg", type: "image/svg+xml" }],
+    shortcut: "/tickr-logo.svg",
+    apple: "/tickr-logo.svg",
+  },
 };
 
 export default function RootLayout({ children }) {

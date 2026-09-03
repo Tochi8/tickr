@@ -133,7 +133,9 @@ export default function App() {
     <main className="shell">
       <nav className="nav">
         <a className="brand" href="#top">
-          <img className="logo" src="/tickr-logo.svg" alt="" width="40" height="40" />
+          <span className="logo-wrap">
+            <img className="logo" src="/tickr-logo.svg" alt="Tickr" width="48" height="48" />
+          </span>
           Tickr
         </a>
         {!isConnected && (
