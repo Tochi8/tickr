@@ -18,6 +18,7 @@ import { aerodromeUrl, basescanTx } from "../lib/swap";
 import { ERC20_ABI, STOCKS, USDC } from "../lib/tokens";
 import ConnectModal from "./ConnectModal";
 import StockBalance from "./StockBalance";
+import StockMark from "./StockMark";
 
 function formatToken(value, decimals, digits = 4) {
   if (value === undefined || value === null) return "—";
@@ -132,7 +133,7 @@ export default function App() {
     <main className="shell">
       <nav className="nav">
         <a className="brand" href="#top">
-          <span className="mark">T</span>
+          <img className="logo" src="/tickr-logo.svg" alt="" width="40" height="40" />
           Tickr
         </a>
         {!isConnected && (
@@ -144,10 +145,10 @@ export default function App() {
         {isConnected ? (
           <div className="wallet">
             <p className="addr">{address.slice(0, 6)}…{address.slice(-4)}</p>
-            <button className="btn ghost" onClick={() => disconnect()}>Disconnect</button>
+            <button className="btn ghost nav-cta" onClick={() => disconnect()}>Disconnect</button>
           </div>
         ) : (
-          <button className="btn primary" onClick={() => setOpenConnect(true)}>
+          <button className="btn primary nav-cta" onClick={() => setOpenConnect(true)}>
             Connect wallet
           </button>
         )}
@@ -163,9 +164,7 @@ export default function App() {
               Alphabet with USDC from a self-custody wallet.
             </p>
             <div className="hero-actions">
-              <button className="btn primary" onClick={() => setOpenConnect(true)}>
-                Get started
-              </button>
+              <button className="btn primary" onClick={() => setOpenConnect(true)}>Get started</button>
               <a className="btn ghost" href="#how">See how it works</a>
             </div>
             <div className="hero-stage">
@@ -177,9 +176,11 @@ export default function App() {
               <article className="float-card c2">
                 <p className="float-kicker">Buy with USDC</p>
                 <div className="mini-picks">
-                  <span className="chip on">NVDAc</span>
-                  <span className="chip">AAPLc</span>
-                  <span className="chip">METAc</span>
+                  {STOCKS.slice(0, 3).map((item) => (
+                    <span key={item.symbol} className={item.symbol === "NVDAc" ? "chip on chip-row" : "chip chip-row"}>
+                      <StockMark symbol={item.symbol} />{item.symbol}
+                    </span>
+                  ))}
                 </div>
                 <button className="btn primary mini" type="button">Buy NVDAc</button>
               </article>
@@ -262,8 +263,12 @@ export default function App() {
               <h2>Buy with USDC</h2>
               <div className="picks">
                 {STOCKS.map((item) => (
-                  <button key={item.symbol} className={item.symbol === stock.symbol ? "chip on" : "chip"} onClick={() => { setStockSymbol(item.symbol); setQuote(null); }}>
-                    {item.symbol}<span>{item.name}</span>
+                  <button key={item.symbol} className={item.symbol === stock.symbol ? "chip on chip-row" : "chip chip-row"} onClick={() => { setStockSymbol(item.symbol); setQuote(null); }}>
+                    <StockMark symbol={item.symbol} />
+                    <span className="chip-copy">
+                      {item.symbol}
+                      <span>{item.name}</span>
+                    </span>
                   </button>
                 ))}
               </div>
