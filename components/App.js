@@ -105,7 +105,7 @@ export default function App() {
         <>
           <section className="hero" id="top">
             <p className="eyebrow">Tickr · Base · Coinbase Tokenized Stocks</p>
-            <h1>Buy the names you already know, onchain.</h1>
+            <h1>Buy the <span className="stock-word">stocks</span> you already know, onchain.</h1>
             <p className="lede hero-lede">
               Eligible non-US users can buy fractional NVIDIA, Apple, Meta, and
               Alphabet with USDC from a self-custody wallet.
