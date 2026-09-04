@@ -12,12 +12,6 @@ const LINKS = {
   coinbaseApp: `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(SITE)}`,
 };
 
-const LOGOS = {
-  browser: "https://cdn.jsdelivr.net/gh/MetaMask/brand-resources@master/SVG/metamask-fox.svg",
-  metamask: "https://cdn.jsdelivr.net/gh/MetaMask/brand-resources@master/SVG/metamask-fox.svg",
-  coinbase: "https://www.coinbase.com/img/favicon/apple-icon-180x180.png",
-};
-
 function WalletMark({ src, alt }) {
   return (
     <span className="wallet-logo">
@@ -51,7 +45,7 @@ export default function ConnectModal({ onClose }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <p className="modal-kicker">You will need an Ethereum wallet to continue.</p>
         <button className="wallet-row" onClick={connectBrowser} disabled={isPending}>
-          <WalletMark src={LOGOS.metamask} alt="Browser wallet" />
+          <WalletMark src="/wallets/metamask.svg" alt="Browser wallet" />
           Browser Wallet
         </button>
         <a
@@ -64,11 +58,11 @@ export default function ConnectModal({ onClose }) {
             }
           }}
         >
-          <WalletMark src={LOGOS.metamask} alt="MetaMask" />
+          <WalletMark src="/wallets/metamask.svg" alt="MetaMask" />
           MetaMask
         </a>
         <a className="wallet-row" href={LINKS.coinbaseApp}>
-          <WalletMark src={LOGOS.coinbase} alt="Coinbase Wallet" />
+          <WalletMark src="/wallets/coinbase.svg" alt="Coinbase Wallet" />
           Coinbase Wallet
         </a>
         <a className="wallet-row" href={LINKS.metamaskInstall} target="_blank" rel="noreferrer">
