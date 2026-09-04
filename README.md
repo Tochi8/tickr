@@ -1,63 +1,53 @@
 # Tickr
 
-Buy Coinbase Tokenized Stocks on Base with USDC — from a self-custody wallet.
+Tickr is a web app for buying Coinbase Tokenized Stocks on Base.
 
-Tickr is a JavaScript app for the Base Builder Quest. It helps eligible **non-US** users trade or use [Coinbase Tokenized Stocks](https://www.base.org/stocks) (`NVDAc`, `AAPLc`, `METAc`, `GOOGLc`).
+You connect a self-custody wallet, pick a name you already know (NVDAc, AAPLc, METAc, GOOGLc), and buy it with USDC on Base. Tickr is the desk in front of the chain. The swap itself is completed on Base through the connected wallet.
 
-Repo: https://github.com/Tochi8/tickr
+Live: [tickr-base.vercel.app](https://tickr-base.vercel.app)
 
-## Stack
+## What problem it solves
 
-- Next.js 15 (App Router, JavaScript)
-- wagmi + viem
-- Optional 0x Swap API for in-app quotes
-- Aerodrome deep link as the no-key live swap path
+Most people who want exposure to names like Nvidia or Apple do not want to learn a DEX from scratch.
 
-## Quick start
+Tickr gives them:
+
+- A simple place to see those tokenized stocks on Base
+- Wallet connect that works from a browser wallet or from MetaMask / Coinbase Wallet on mobile
+- Balances for USDC and the stocks they already hold
+- A path to get a quote and complete a buy without hunting pool links by hand
+
+Tickr is not a broker and not investment advice. Coinbase Tokenized Stocks are only for eligible people outside the United States.
+
+## How to use the platform
+
+1. Open [tickr-base.vercel.app](https://tickr-base.vercel.app).
+2. Tap **Connect wallet**.
+3. On desktop, use **Browser Wallet** if MetaMask, Rabby, or Coinbase Wallet is installed in the browser.
+4. On iPhone, open the site inside the MetaMask or Coinbase Wallet in-app browser, then connect.
+5. Confirm you are on **Base**.
+6. Pick a stock (NVDAc, AAPLc, METAc, or GOOGLc).
+7. Check your USDC balance. You need USDC on Base to buy.
+8. Get a quote or continue to the buy flow for that stock.
+9. Approve the transaction in your wallet and wait for confirmation.
+10. The new stock balance shows on Tickr after the transaction lands.
+
+If you have no wallet yet, use **Get a wallet**, install MetaMask or Coinbase Wallet, then come back.
+
+## Tech stack
+
+- JavaScript
+- Next.js 15 (App Router)
+- React 19
+- wagmi and viem for wallet connect, Base chain, and balances
+- TanStack Query
+- Vercel for hosting
+
+## Run locally
 
 ```bash
 npm install
-cp .env.example .env.local
-# add NEXT_PUBLIC_BUILDER_CODE from https://base.dev
 npm run dev
 ```
 
-Open http://localhost:3000
-
-## Environment
-
-| Variable | Required | Purpose |
-|---|---|---|
-| `NEXT_PUBLIC_BUILDER_CODE` | Yes for attribution | base.dev Builder Code |
-| `ZEROEX_API_KEY` | No | In-app quote + swap via `/api/quote` |
-| `NEXT_PUBLIC_BASE_RPC` | No | Custom Base RPC |
-
-Without a 0x key the UI still works: connect, see balances, and **Open Aerodrome** to complete a real swap for the Loom.
-
-## Official token addresses
-
-Re-check on https://www.base.org/stocks before any mainnet transaction.
-
-- USDC: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`
-- NVDAc: `0xb20000000000000000000078ee7ce2fE4908108C`
-- AAPLc: `0xb200000000000000000000C2e324d24d7eEcd1fb`
-- METAc: `0xb2000000000000000000008bC8786B856E61707C`
-- GOOGLc: `0xb2000000000000000000002D0BA3164cc74f58B7`
-
-## Deploy
-
-1. Import [Tochi8/tickr](https://github.com/Tochi8/tickr) in [Vercel](https://vercel.com)
-2. Add env vars
-3. Deploy
-4. Use the `*.vercel.app` URL on the quest form
-
-## Quest submission
-
-- Form: https://docs.google.com/forms/d/e/1FAIpQLSfru57ZLO9AQ-hgWX_G5ZAzmAKkzFLZCyqe5wTyBSwACFX5tg/viewform
-- Record a Loom, post on X tagging `@buildonbase`
-- Deadline: 9 Sep 2026, 11:59pm EST
-- Do **not** enable trading for US users
-
-## Compliance
-
-Coinbase Tokenized Stocks are only available to eligible persons outside the United States. Tickr is not a broker and is not investment advice.
+Open [http://localhost:3000](http://localhost:3000).
