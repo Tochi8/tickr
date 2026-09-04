@@ -75,8 +75,13 @@ h2 { font-size: 28px; margin: 8px 0 16px; }
 .grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: 16px; }
 .card h2 { font-size: 16px; margin-bottom: 14px; }
 .balances { list-style: none; display: grid; gap: 10px; }
-.balances li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+.balances li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); padding-bottom: 8px; align-items: center; }
 .asset { display: inline-flex; align-items: center; gap: 8px; }
+.bal-right { display: grid; justify-items: end; gap: 2px; }
+.chg { font-size: 11px; font-weight: 600; }
+.chg.up { color: var(--good); }
+.chg.down { color: var(--bad); }
+.chg.flat { color: var(--muted); }
 .tiny { margin-left: 8px; font-size: 11px; color: var(--muted); }
 .picks, .presets, .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .chip, .btn {
@@ -111,7 +116,7 @@ h2 { font-size: 28px; margin: 8px 0 16px; }
   width: 28px; height: 28px; border-radius: 8px; overflow: hidden;
   display: grid; place-items: center; flex: 0 0 auto;
 }
-.wallet-logo svg { display: block; }
+.wallet-logo svg, .wallet-logo img { display: block; width: 28px; height: 28px; object-fit: cover; }
 .modal-note { color: #666; font-size: 12px; line-height: 1.4; margin: 8px 0 4px; }
 .modal-cancel {
   display: block; width: 100%; margin-top: 8px; padding: 10px;
