@@ -107,11 +107,16 @@ h2 { font-size: 28px; margin: 8px 0 16px; }
   display: flex; align-items: center; gap: 12px; width: 100%; background: #fff; border: 0;
   border-radius: 14px; padding: 14px 16px; margin-bottom: 10px; font: inherit; cursor: pointer; color: #111;
 }
-.wallet-icon {
-  width: 28px; height: 28px; border-radius: 999px; background: #111; color: #fff;
-  display: grid; place-items: center; font-size: 11px; font-weight: 700;
+.wallet-logo {
+  width: 28px; height: 28px; border-radius: 8px; overflow: hidden;
+  display: grid; place-items: center; flex: 0 0 auto;
 }
-.modal-note { color: #666; font-size: 12px; line-height: 1.4; margin: 8px 0 12px; }
+.wallet-logo svg { display: block; }
+.modal-note { color: #666; font-size: 12px; line-height: 1.4; margin: 8px 0 4px; }
+.modal-cancel {
+  display: block; width: 100%; margin-top: 8px; padding: 10px;
+  border: 0; background: transparent; color: #555; font: inherit; cursor: pointer;
+}
 @media (max-width: 800px) {
   h1 { font-size: 32px; }
   .brand { font-size: 22px; }
