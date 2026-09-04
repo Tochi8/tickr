@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   useAccount,
   useBalance,
@@ -16,6 +16,7 @@ import {
   isMobileBrowser,
   metamaskDappUrl,
 } from "../lib/swap";
+import { fetchStockMoves } from "../lib/prices";
 import { ERC20_ABI, STOCKS, USDC } from "../lib/tokens";
 import ConnectModal from "./ConnectModal";
 import StockBalance from "./StockBalance";
@@ -37,11 +38,28 @@ export default function App() {
   const [amount, setAmount] = useState("5");
   const [eligible, setEligible] = useState(false);
   const [hint, setHint] = useState("");
+  const [moves, setMoves] = useState({});
 
   const stock = useMemo(
     () => STOCKS.find((s) => s.symbol === stockSymbol) || STOCKS[0],
     [stockSymbol]
   );
+
+  useEffect(() => {
+    let live = true;
+    fetchStockMoves().then((data) => {
+      if (live) setMoves(data);
+    });
+    const id = setInterval(() => {
+      fetchStockMoves().then((data) => {
+        if (live) setMoves(data);
+      });
+    }, 60_000);
+    return () => {
+      live = false;
+      clearInterval(id);
+    };
+  }, []);
 
   const ethBalance = useBalance({ address, chainId: base.id });
   const usdcBalance = useReadContract({
@@ -202,7 +220,12 @@ export default function App() {
                 <li><span>ETH (gas)</span><strong>{ethBalance.data ? formatToken(ethBalance.data.value, 18, 5) : "—"}</strong></li>
                 <li><span>USDC</span><strong>{usdcBalance.data !== undefined ? formatToken(usdcBalance.data, USDC.decimals, 2) : "—"}</strong></li>
                 {STOCKS.map((item) => (
-                  <StockBalance key={item.symbol} stock={item} address={address} />
+                  <StockBalance
+                    key={item.symbol}
+                    stock={item}
+                    address={address}
+                    change24h={moves[item.symbol]}
+                  />
                 ))}
               </ul>
             </div>
