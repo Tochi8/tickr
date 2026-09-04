@@ -72,11 +72,11 @@ export default function ConnectModal({ onClose }) {
             }
           }}
         >
-          <WalletMark src="/wallets/metamask.svg" alt="MetaMask" />
+          <WalletMark src="/wallets/metamask.jpg" alt="MetaMask" />
           MetaMask
         </a>
         <a className="wallet-row" href={LINKS.coinbaseApp}>
-          <WalletMark src="/wallets/coinbase.svg" alt="Coinbase Wallet" />
+          <WalletMark src="/wallets/coinbase.jpg" alt="Coinbase Wallet" />
           Coinbase Wallet
         </a>
         <a className="wallet-row" href={LINKS.metamaskInstall} target="_blank" rel="noreferrer">
