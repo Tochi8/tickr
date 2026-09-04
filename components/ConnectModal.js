@@ -12,6 +12,20 @@ const LINKS = {
   coinbaseApp: `https://go.cb-w.com/dapp?cb_url=${encodeURIComponent(SITE)}`,
 };
 
+function BrowserMark() {
+  return (
+    <span className="wallet-logo" aria-hidden="true">
+      <svg viewBox="0 0 32 32" width="28" height="28">
+        <rect width="32" height="32" rx="8" fill="#1d4ed8" />
+        <rect x="6" y="8" width="20" height="16" rx="3" fill="#fff" />
+        <rect x="6" y="8" width="20" height="5" rx="3" fill="#93c5fd" />
+        <circle cx="9.5" cy="10.5" r="1" fill="#1d4ed8" />
+        <circle cx="13" cy="10.5" r="1" fill="#1d4ed8" />
+      </svg>
+    </span>
+  );
+}
+
 function WalletMark({ src, alt }) {
   return (
     <span className="wallet-logo">
@@ -45,7 +59,7 @@ export default function ConnectModal({ onClose }) {
       <div className="modal" onClick={(e) => e.stopPropagation()}>
         <p className="modal-kicker">You will need an Ethereum wallet to continue.</p>
         <button className="wallet-row" onClick={connectBrowser} disabled={isPending}>
-          <WalletMark src="/wallets/metamask.svg" alt="Browser wallet" />
+          <BrowserMark />
           Browser Wallet
         </button>
         <a
@@ -71,8 +85,8 @@ export default function ConnectModal({ onClose }) {
         </a>
         {error && <p className="err">{error}</p>}
         <p className="modal-note">
-          On iPhone, open Tickr inside MetaMask or Coinbase Wallet. On desktop,
-          install an extension, then use Browser Wallet.
+          Browser Wallet uses whatever wallet is already installed in this browser.
+          On iPhone, open Tickr inside MetaMask or Coinbase Wallet.
         </p>
         <button type="button" className="modal-cancel" onClick={onClose}>
           Cancel
